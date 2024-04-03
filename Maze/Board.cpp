@@ -83,13 +83,14 @@ void Board::GenerateMap()
                 continue;
             }
 
-            const int32 randValue = rand() % 2;
+            const int32 randValue = ::rand() % 2;
             switch (randValue)
             {
             case 0:
                 _tile[y][x + 1] = TileType::EMPTY;
                 break;
             case 1:
+            default:
                 _tile[y + 1][x] = TileType::EMPTY;
                 break;
             }
@@ -97,7 +98,7 @@ void Board::GenerateMap()
     }
 }
 
-TileType Board::GetTileType(const Pos& pos)
+TileType Board::GetTileType(Pos pos)
 {
     if (pos.x < 0 || pos.x >= _size)
     {
@@ -110,7 +111,7 @@ TileType Board::GetTileType(const Pos& pos)
     return _tile[pos.y][pos.x];
 }
 
-ConsoleColor Board::GetTileColor(const Pos& pos)
+ConsoleColor Board::GetTileColor(Pos pos)
 {
     if (_player && _player->GetPos() == pos)
     {

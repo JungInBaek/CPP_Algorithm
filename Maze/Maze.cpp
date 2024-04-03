@@ -8,7 +8,7 @@ Player player;
 
 int main()
 {
-    srand(static_cast<unsigned>(time(nullptr)));
+    ::srand(static_cast<unsigned>(time(nullptr)));
 
     board.Init(25, &player);
     player.Init(&board);

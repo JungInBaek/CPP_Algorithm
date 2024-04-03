@@ -10,25 +10,25 @@ using namespace std;
 
 struct Pos
 {
-	bool operator==(const Pos& other)
+	bool operator==(Pos& other)
 	{
 		return x == other.x && y == other.y;
 	}
 
-	bool operator!=(const Pos& other)
+	bool operator!=(Pos& other)
 	{
 		return x != other.x || y != other.y;
 	}
 
-	Pos operator+(const Pos& other)
+	Pos operator+(Pos& other)
 	{
 		Pos ret;
 		ret.x = x + other.x;
-		ret.y = x + other.y;
+		ret.y = y + other.y;
 		return ret;
 	}
 
-	Pos& operator+=(const Pos& other)
+	Pos& operator+=(Pos& other)
 	{
 		x += other.x;
 		y += other.y;
@@ -45,5 +45,6 @@ enum Dir
 	DIR_LEFT = 1,
 	DIR_DOWN = 2,
 	DIR_RIGHT = 3,
+
 	DIR_COUNT = 4,
 };
