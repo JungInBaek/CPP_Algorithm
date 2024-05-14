@@ -6,124 +6,84 @@
 using namespace std;
 
 
-// Queue (FIFO First-In-First-Out 선입선출)
-
-template<typename T>
-class ArrayQueue
+static void CreateGraph_1()
 {
-public:
-	ArrayQueue()
+	struct Vertex
 	{
-		_container.resize(100);
-	}
+		vector<Vertex*> edges;
+	};
+	vector<Vertex> v;
+	v.resize(6);
 
-	void push(const T& value)
+	v[0].edges.push_back(&v[1]);
+	v[0].edges.push_back(&v[3]);
+	v[1].edges.push_back(&v[0]);
+	v[1].edges.push_back(&v[2]);
+	v[1].edges.push_back(&v[3]);
+	v[3].edges.push_back(&v[4]);
+	v[5].edges.push_back(&v[4]);
+
+	bool connected = false;
+	for (vector<Vertex*>::iterator it = v[0].edges.begin(); it != v[0].edges.end(); ++it)
 	{
-		// TODO: 다 찼는지 체크
-		if (_size == _container.size())
+		if (*it == &v[3])
 		{
-			// 증설
-			int newSize = max(1, _size * 2);
-			vector<T> newData;
-			newData.resize(newSize);
-
-			// 데이터 복사
-			for (int i = 0; i < _size; i++)
-			{
-				newData[i] = _container[_front];
-				_front = (_front + 1) % _container.size();
-			}
-			_container.swap(newData);
-			_front = 0;
-			_back = _size;
-		}
-
-		_container[_back] = value;
-		_back = (_back + 1) % _container.size();
-		_size++;
-	}
-
-	void pop()
-	{
-		// TODO: 비었는지 체크
-		if (!empty())
-		{
-			_front = (_front + 1) % _container.size();
-			_size--;
+			connected = true;
+			break;
 		}
 	}
+}
 
-	T& front()
-	{
-		return _container[_front];
-	}
-
-	bool empty()
-	{
-		return _size == 0;
-	}
-
-	int size()
-	{
-		return _size;
-	}
-
-private:
-	vector<T> _container;
-	int _front = 0;
-	int _back = 0;
-	int _size = 0;
-};
-
-template<typename T>
-class ListQueue
+static void CreateGraph_2()
 {
-public:
-	void push(const T& value)
-	{
-		_container.push_back(value);
-	}
+	struct Vertex {};
+	vector<Vertex> v;
+	v.resize(6);
 
-	void pop()
-	{
-		_container.erase(_container.begin());
-	}
+	vector<vector<int>> adjacent(6);
+	adjacent[0] = { 1, 3 };
+	adjacent[1] = { 0, 2, 3 };
+	adjacent[3] = { 4 };
+	adjacent[5] = { 4 };
 
-	T& front()
-	{
+	vector<int>& adj = adjacent[0];
+	bool connected = std::find(adj.begin(), adj.end(), 3) != adj.end();
+}
 
-		return _container.front();
-	}
+static void CreateGraph_3()
+{
+	struct Vertex {};
+	vector<Vertex> v;
+	v.resize(6);
 
-	bool empty()
-	{
-		return _container.empty();
-	}
+	vector<vector<bool>> adjacent(6, vector<bool>(6, false));
+	adjacent[0][1] = true;
+	adjacent[0][3] = true;
+	adjacent[1][0] = true;
+	adjacent[1][2] = true;
+	adjacent[1][3] = true;
+	adjacent[3][4] = true;
+	adjacent[5][4] = true;
 
-	int size()
-	{
-		return _container.size();
-	}
+	bool connected = adjacent[0][3];
 
-private:
-	list<T> _container;
-};
+	// 가중치 그래프
+	vector<vector<int>> adjacent2(6, vector<int>(6, -1));
+	adjacent2[0][1] = 15;
+	adjacent2[0][3] = 35;
+	adjacent2[1][0] = 15;
+	adjacent2[1][2] = 5;
+	adjacent2[1][3] = 10;
+	adjacent2[3][4] = 5;
+	adjacent2[5][4] = 5;
+
+	bool connected2 = adjacent2[0][3] != -1;
+	int weight = adjacent2[0][3];
+}
 
 int main()
 {
-	ArrayQueue<int> q;
-
-	for (int i = 0; i < 100; i++)
-	{
-		q.push(i);
-	}
-
-	while (q.empty() == false)
-	{
-		int value = q.front();
-		q.pop();
-		cout << value << endl;
-	}
-
-	int size = q.size();
+	CreateGraph_1();
+	CreateGraph_2();
+	CreateGraph_3();
 }
