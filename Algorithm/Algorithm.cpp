@@ -3,87 +3,144 @@
 #include <list>
 #include <stack>
 #include <queue>
+
 using namespace std;
 
 
-static void CreateGraph_1()
+struct Vertex
 {
-	struct Vertex
-	{
-		vector<Vertex*> edges;
-	};
-	vector<Vertex> v;
-	v.resize(6);
 
-	v[0].edges.push_back(&v[1]);
-	v[0].edges.push_back(&v[3]);
-	v[1].edges.push_back(&v[0]);
-	v[1].edges.push_back(&v[2]);
-	v[1].edges.push_back(&v[3]);
-	v[3].edges.push_back(&v[4]);
-	v[5].edges.push_back(&v[4]);
+};
 
-	bool connected = false;
-	for (vector<Vertex*>::iterator it = v[0].edges.begin(); it != v[0].edges.end(); ++it)
+vector<Vertex> vertices;
+vector<vector<int>> adjacent;
+vector<bool> visited;
+
+queue<int> q;
+vector<bool> discovered;
+
+void CreateGraph()
+{
+	vertices.resize(6);
+
+	adjacent.resize(6, vector<int>());
+	adjacent[0].push_back(1);
+	adjacent[0].push_back(3);
+	adjacent[1].push_back(0);
+	adjacent[1].push_back(2);
+	adjacent[1].push_back(3);
+	adjacent[3].push_back(4);
+	adjacent[5].push_back(4);
+
+	visited.resize(6);
+	
+	discovered.resize(6);
+}
+
+void Dfs(int here)
+{
+	visited[here] = true;
+	cout << "visited: " << here << endl;
+
+	for (int there : adjacent[here])
 	{
-		if (*it == &v[3])
+		if (visited[there] == false)
 		{
-			connected = true;
-			break;
+			Dfs(there);
+		}
+
+	}
+}
+
+void DfsAll()
+{
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		if (visited[i] == false)
+		{
+			Dfs(i);
 		}
 	}
 }
 
-static void CreateGraph_2()
+
+
+void RecursiveBfs()
 {
-	struct Vertex {};
-	vector<Vertex> v;
-	v.resize(6);
+	if (q.empty())
+	{
+		return;
+	}
+	int here = q.front();
+	q.pop();
 
-	vector<vector<int>> adjacent(6);
-	adjacent[0] = { 1, 3 };
-	adjacent[1] = { 0, 2, 3 };
-	adjacent[3] = { 4 };
-	adjacent[5] = { 4 };
+	cout << "discovered: " << here << endl;
 
-	vector<int>& adj = adjacent[0];
-	bool connected = std::find(adj.begin(), adj.end(), 3) != adj.end();
+	for (int there : adjacent[here])
+	{
+		if (discovered[there] == false)
+		{
+			q.push(there);
+			discovered[there] = true;
+		}
+	}
+	RecursiveBfs();
 }
 
-static void CreateGraph_3()
+void RecursiveBfsAll()
 {
-	struct Vertex {};
-	vector<Vertex> v;
-	v.resize(6);
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		if (discovered[i] == false)
+		{
+			q.push(i);
+			discovered[i] = true;
+			RecursiveBfs();
+		}
+	}
+}
 
-	vector<vector<bool>> adjacent(6, vector<bool>(6, false));
-	adjacent[0][1] = true;
-	adjacent[0][3] = true;
-	adjacent[1][0] = true;
-	adjacent[1][2] = true;
-	adjacent[1][3] = true;
-	adjacent[3][4] = true;
-	adjacent[5][4] = true;
+void Bfs(int start)
+{
+	q.push(start);
+	discovered[start] = true;
 
-	bool connected = adjacent[0][3];
+	while (q.empty() == false)
+	{
+		int here = q.front();
+		q.pop();
 
-	// 가중치 그래프
-	vector<vector<int>> adjacent2(6, vector<int>(6, -1));
-	adjacent2[0][1] = 15;
-	adjacent2[0][3] = 35;
-	adjacent2[1][0] = 15;
-	adjacent2[1][2] = 5;
-	adjacent2[1][3] = 10;
-	adjacent2[3][4] = 5;
-	adjacent2[5][4] = 5;
+		cout << "discovered: " << here << endl;
 
-	bool connected2 = adjacent2[0][3] != -1;
-	int weight = adjacent2[0][3];
+		for (int there : adjacent[here])
+		{
+			if (discovered[there] == true)
+			{
+				continue;
+			}
+
+			q.push(there);
+			discovered[there] = true;
+		}
+	}
+}
+
+void BfsAll()
+{
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		if (discovered[i] == false)
+		{
+			Bfs(i);
+		}
+	}
 }
 
 int main()
 {
-	CreateGraph_1();
-	CreateGraph_2();
-	CreateGraph_3();
+	CreateGraph();
+
+	DfsAll();
+	
+	BfsAll();
 }

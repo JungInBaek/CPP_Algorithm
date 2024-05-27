@@ -1,6 +1,5 @@
 #pragma once
 
-
 class Board;
 
 class Player
@@ -18,6 +17,9 @@ public:
 	Pos GetPos() { return _pos; }
 
 	bool CanGo(Pos pos);
+
+	void RightHand();
+	void Bfs();
 
 private:
 	Pos _pos = {};

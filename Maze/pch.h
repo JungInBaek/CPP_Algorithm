@@ -1,24 +1,35 @@
 #pragma once
 
-#include <vector>
-#include <stack>
+#include "Types.h"
 #include <Windows.h>
 #include <iostream>
+
+#include <vector>
+#include <queue>
+#include <map>
 using namespace std;
 
-#include "Types.h"
 
 
 struct Pos
 {
-	bool operator==(Pos& other)
+	bool operator==(const Pos& other) const
 	{
 		return x == other.x && y == other.y;
 	}
 
-	bool operator!=(Pos& other)
+	bool operator!=(const Pos& other) const
 	{
-		return x != other.x || y != other.y;
+		return !(*this == other);
+	}
+
+	bool operator<(const Pos& other) const
+	{
+		if (y != other.y)
+		{
+			return y < other.y;
+		}
+		return x < other.x;
 	}
 
 	Pos operator+(Pos& other)

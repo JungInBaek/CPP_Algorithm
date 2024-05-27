@@ -2,12 +2,41 @@
 #include "Player.h"
 #include "Board.h"
 
+#include <stack>
+
 
 void Player::Init(Board* board)
 {
 	_pos = board->GetEnterPos();
 	_board = board;
 
+	//RightHand();
+	Bfs();
+}
+
+void Player::Update(uint64 deltaTick)
+{
+	if (_pathIndex >= _path.size())
+	{
+		return;
+	}
+
+	_sumTick += deltaTick;
+
+	if (_sumTick >= MOVE_TICK)
+	{
+		_sumTick = 0;
+		_pos = _path[_pathIndex++];
+	}
+}
+
+bool Player::CanGo(Pos pos)
+{
+	return _board->GetTileType(pos) == TileType::EMPTY;
+}
+
+void Player::RightHand()
+{
 	Pos pos = _pos;
 
 	_path.clear();
@@ -87,23 +116,69 @@ void Player::Init(Board* board)
 	_path = path;
 }
 
-void Player::Update(uint64 deltaTick)
+void Player::Bfs()
 {
-	if (_pathIndex >= _path.size())
+	Pos pos = _pos;
+	Pos dest = _board->GetExitPos();
+	Pos front[4] =
 	{
-		return;
+		Pos { 0, -1 },	// UP
+		Pos { -1, 0 },	// LEFT
+		Pos { 0, 1 },	// DOWN
+		Pos { 1, 0 },	// RIGHT
+	};
+
+	const int32 size = _board->GetSize();
+	vector<vector<bool>> discovered(size, vector<bool>(size));
+	map<Pos, Pos> parent;
+
+	queue<Pos> q;
+	q.push(pos);
+	discovered[pos.y][pos.x] = true;
+	parent[pos] = pos;
+
+	while (q.empty() == false)
+	{
+		pos = q.front();
+		q.pop();
+
+		if (pos == dest)
+		{
+			break;
+		}
+
+		for (int32 dir = 0; dir < 4; ++dir)
+		{
+			Pos nextPos = pos + front[dir];
+
+			if (CanGo(nextPos) == false)
+			{
+				continue;
+			}
+
+			if (discovered[nextPos.y][nextPos.x])
+			{
+				continue;
+			}
+
+			q.push(nextPos);
+			discovered[nextPos.y][nextPos.x] = true;
+			parent[nextPos] = pos;
+		}
 	}
 
-	_sumTick += deltaTick;
+	_path.clear();
 
-	if (_sumTick >= MOVE_TICK)
+	pos = dest;
+	while (true)
 	{
-		_sumTick = 0;
-		_pos = _path[_pathIndex++];
+		_path.push_back(pos);
+		if (pos == parent[pos])
+		{
+			break;
+		}
+		pos = parent[pos];
 	}
-}
 
-bool Player::CanGo(Pos pos)
-{
-	return _board->GetTileType(pos) == TileType::EMPTY;
+	std::reverse(_path.begin(), _path.end());
 }
