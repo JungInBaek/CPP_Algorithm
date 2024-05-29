@@ -12,135 +12,86 @@ struct Vertex
 
 };
 
+struct VertexCost
+{
+	int vertex;
+	int cost;
+};
+
 vector<Vertex> vertices;
 vector<vector<int>> adjacent;
-vector<bool> visited;
+vector<int> parent;
+vector<int> best;
+list<VertexCost> discovered;
 
-queue<int> q;
-vector<bool> discovered;
 
 void CreateGraph()
 {
-	vertices.resize(6);
-
-	adjacent.resize(6, vector<int>());
-	adjacent[0].push_back(1);
-	adjacent[0].push_back(3);
-	adjacent[1].push_back(0);
-	adjacent[1].push_back(2);
-	adjacent[1].push_back(3);
-	adjacent[3].push_back(4);
-	adjacent[5].push_back(4);
-
-	visited.resize(6);
-	
-	discovered.resize(6);
+	int size = 6;
+	vertices.resize(size);
+	adjacent =
+	{
+		{ -1, 15, -1, 35, -1, -1 },
+		{ 15, -1, 5, 10, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, 5, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, 5, -1 },
+	};
+	parent.resize(size, -1);
+	best.resize(size, INT32_MAX);
 }
 
-void Dfs(int here)
+void Dijikstra(int here)
 {
-	visited[here] = true;
-	cout << "visited: " << here << endl;
-
-	for (int there : adjacent[here])
+	for (int there = 0; there < 6; ++there)
 	{
-		if (visited[there] == false)
+		if (adjacent[here][there] == -1)
 		{
-			Dfs(there);
+			continue;
 		}
 
-	}
-}
-
-void DfsAll()
-{
-	for (int i = 0; i < vertices.size(); i++)
-	{
-		if (visited[i] == false)
+		int nextCost = best[here] + adjacent[here][there];
+		if (nextCost >= best[there])
 		{
-			Dfs(i);
+			continue;
 		}
+
+		best[there] = nextCost;
+		parent[there] = here;
+		discovered.push_back(VertexCost{ there, nextCost });
 	}
-}
 
-
-
-void RecursiveBfs()
-{
-	if (q.empty())
+	if (discovered.empty())
 	{
 		return;
 	}
-	int here = q.front();
-	q.pop();
 
-	cout << "discovered: " << here << endl;
-
-	for (int there : adjacent[here])
+	list<VertexCost>::iterator bestIt;
+	int bestCost = INT32_MAX;
+	for (auto it = discovered.begin(); it != discovered.end(); ++it)
 	{
-		if (discovered[there] == false)
+		if (it->cost >= bestCost)
 		{
-			q.push(there);
-			discovered[there] = true;
+			continue;
 		}
+
+		bestCost = it->cost;
+		bestIt = it;
 	}
-	RecursiveBfs();
-}
 
-void RecursiveBfsAll()
-{
-	for (int i = 0; i < vertices.size(); i++)
-	{
-		if (discovered[i] == false)
-		{
-			q.push(i);
-			discovered[i] = true;
-			RecursiveBfs();
-		}
-	}
-}
-
-void Bfs(int start)
-{
-	q.push(start);
-	discovered[start] = true;
-
-	while (q.empty() == false)
-	{
-		int here = q.front();
-		q.pop();
-
-		cout << "discovered: " << here << endl;
-
-		for (int there : adjacent[here])
-		{
-			if (discovered[there] == true)
-			{
-				continue;
-			}
-
-			q.push(there);
-			discovered[there] = true;
-		}
-	}
-}
-
-void BfsAll()
-{
-	for (int i = 0; i < vertices.size(); i++)
-	{
-		if (discovered[i] == false)
-		{
-			Bfs(i);
-		}
-	}
+	int next = bestIt->vertex;
+	discovered.erase(bestIt);
+	Dijikstra(next);
 }
 
 int main()
 {
 	CreateGraph();
 
-	DfsAll();
-	
-	BfsAll();
+	parent[0] = 0;
+	best[0] = 0;
+	Dijikstra(0);
+
+	cout << "end" << endl;
 }

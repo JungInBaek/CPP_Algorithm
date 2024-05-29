@@ -118,23 +118,23 @@ void Player::RightHand()
 
 void Player::Bfs()
 {
-	Pos pos = _pos;
-	Pos dest = _board->GetExitPos();
-	Pos front[4] =
-	{
-		Pos { 0, -1 },	// UP
-		Pos { -1, 0 },	// LEFT
-		Pos { 0, 1 },	// DOWN
-		Pos { 1, 0 },	// RIGHT
-	};
-
-	const int32 size = _board->GetSize();
-	vector<vector<bool>> discovered(size, vector<bool>(size));
+	queue<Pos> q;
+	map<Pos, bool> discovered;
 	map<Pos, Pos> parent;
 
-	queue<Pos> q;
+	Pos pos = _pos;
+	Pos dest = _board->GetExitPos();
+
+	Pos front[] =
+	{
+		Pos{ 0, -1 },
+		Pos{ 1, 0 },
+		Pos{ 0, 1 },
+		Pos{ -1, 0 },
+	};
+
 	q.push(pos);
-	discovered[pos.y][pos.x] = true;
+	discovered[pos] = true;
 	parent[pos] = pos;
 
 	while (q.empty() == false)
@@ -147,7 +147,7 @@ void Player::Bfs()
 			break;
 		}
 
-		for (int32 dir = 0; dir < 4; ++dir)
+		for (int32 dir = 0; dir < 4; dir++)
 		{
 			Pos nextPos = pos + front[dir];
 
@@ -156,13 +156,13 @@ void Player::Bfs()
 				continue;
 			}
 
-			if (discovered[nextPos.y][nextPos.x])
+			if (discovered[nextPos])
 			{
 				continue;
 			}
 
 			q.push(nextPos);
-			discovered[nextPos.y][nextPos.x] = true;
+			discovered[nextPos] = true;
 			parent[nextPos] = pos;
 		}
 	}
@@ -173,7 +173,7 @@ void Player::Bfs()
 	while (true)
 	{
 		_path.push_back(pos);
-		if (pos == parent[pos])
+		if (parent[pos] == pos)
 		{
 			break;
 		}
