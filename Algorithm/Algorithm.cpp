@@ -7,91 +7,101 @@
 using namespace std;
 
 
-struct Vertex
+struct Node
 {
+public:
+	Node() {}
+	Node(string data) { this->data = data; }
 
+	string data;
+	vector<Node*> children;
 };
 
-struct VertexCost
+Node* CreateTree()
 {
-	int vertex;
-	int cost;
-};
-
-vector<Vertex> vertices;
-vector<vector<int>> adjacent;
-vector<int> parent;
-vector<int> best;
-list<VertexCost> discovered;
-
-
-void CreateGraph()
-{
-	int size = 6;
-	vertices.resize(size);
-	adjacent =
+	Node* root = new Node("R1 개발실");
 	{
-		{ -1, 15, -1, 35, -1, -1 },
-		{ 15, -1, 5, 10, -1, -1 },
-		{ -1, -1, -1, -1, -1, -1 },
-		{ -1, -1, -1, -1, 5, -1 },
-		{ -1, -1, -1, -1, -1, -1 },
-		{ -1, -1, -1, -1, 5, -1 },
-	};
-	parent.resize(size, -1);
-	best.resize(size, INT32_MAX);
+		Node* node = new Node("디자인팀");
+		root->children.push_back(node);
+		{
+			Node* leaf = new Node("전투");
+			node->children.push_back(std::move(leaf));
+		}
+		{
+			Node* leaf = new Node("경제");
+			node->children.push_back(std::move(leaf));
+		}
+		{
+			Node* leaf = new Node("스토리");
+			node->children.push_back(std::move(leaf));
+		}
+	}
+	{
+		Node* node = new Node("프로그래밍팀");
+		root->children.push_back(node);
+		{
+			Node* leaf = new Node("서버");
+			node->children.push_back(std::move(leaf));
+		}
+		{
+			Node* leaf = new Node("클라");
+			node->children.push_back(std::move(leaf));
+		}
+		{
+			Node* leaf = new Node("엔진");
+			node->children.push_back(std::move(leaf));
+		}
+	}
+	{
+		Node* node = new Node("아트팀");
+		root->children.push_back(node);
+		{
+			Node* leaf = new Node("배경");
+			node->children.push_back(std::move(leaf));
+		}
+		{
+			Node* leaf = new Node("캐릭터");
+			node->children.push_back(std::move(leaf));
+		}
+	}
+
+	return root;
 }
 
-void Dijikstra(int here)
+void PrintTree(const Node& node, int depth)
 {
-	for (int there = 0; there < 6; ++there)
+	for (int i = 0; i < depth; i++)
 	{
-		if (adjacent[here][there] == -1)
-		{
-			continue;
-		}
+		cout << "-";
+	}
+	cout << " ";
+	cout << node.data << endl;
 
-		int nextCost = best[here] + adjacent[here][there];
-		if (nextCost >= best[there])
-		{
-			continue;
-		}
+	for(Node* child : node.children)
+	{
+		PrintTree(*child, depth + 1);
+	}
+}
 
-		best[there] = nextCost;
-		parent[there] = here;
-		discovered.push_back(VertexCost{ there, nextCost });
+int GetHeight(const Node& node)
+{
+	int height = 1;
+
+	for (Node* child : node.children)
+	{
+		height = max(height, GetHeight(*child) + 1);
 	}
 
-	if (discovered.empty())
-	{
-		return;
-	}
-
-	list<VertexCost>::iterator bestIt;
-	int bestCost = INT32_MAX;
-	for (auto it = discovered.begin(); it != discovered.end(); ++it)
-	{
-		if (it->cost >= bestCost)
-		{
-			continue;
-		}
-
-		bestCost = it->cost;
-		bestIt = it;
-	}
-
-	int next = bestIt->vertex;
-	discovered.erase(bestIt);
-	Dijikstra(next);
+	return height;
 }
 
 int main()
 {
-	CreateGraph();
+	Node& root = *CreateTree();
 
-	parent[0] = 0;
-	best[0] = 0;
-	Dijikstra(0);
+	PrintTree(root, 0);
 
-	cout << "end" << endl;
+	int height = GetHeight(root);
+
+	cout << "height: " << height << endl;
 }
