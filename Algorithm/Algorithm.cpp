@@ -7,101 +7,116 @@
 using namespace std;
 
 
-struct Node
+template<typename T, typename Container = vector<T>, typename Predicate = less<T>>
+class PriorityQueue
 {
 public:
-	Node() {}
-	Node(string data) { this->data = data; }
+	bool empty()
+	{
+		return _heap.empty();
+	}
 
-	string data;
-	vector<Node*> children;
+	T& top()
+	{
+		return _heap[0];
+	}
+
+	void pop()
+	{
+		int index = 0;
+		_heap[index] = _heap.back();
+		_heap.pop_back();
+
+		if (_heap.empty())
+		{
+			return;
+		}
+		PopAlign(index);
+	}
+
+	void push(const T& data)
+	{
+		_heap.push_back(data);
+
+		int index = static_cast<int>(_heap.size()) - 1;
+		if (index == 0)
+		{
+			return;
+		}
+		PushAlign(index);
+	}
+
+	void PopAlign(int index)
+	{
+		int size = static_cast<int>(_heap.size());
+
+		int child = (index * 2) + 1;
+		if (child >= size)
+		{
+			return;
+		}
+
+		if (child + 1 < size && _predicate(_heap[child], _heap[child + 1]))
+		{
+			++child;
+		}
+
+		if (_predicate(_heap[child], _heap[index]))
+		{
+			return;
+		}
+
+		T temp = _heap[index];
+		_heap[index] = _heap[child];
+		_heap[child] = temp;
+
+		if ((child * 2) + 1 >= size)
+		{
+			return;
+		}
+
+		PopAlign(child);
+	}
+
+	void PushAlign(int index)
+	{
+		int parent = (index - 1) / 2;
+		if (_predicate(_heap[parent], _heap[index]))
+		{
+			T temp = _heap[index];
+			_heap[index] = _heap[parent];
+			_heap[parent] = temp;
+		}
+
+		if (parent == 0)
+		{
+			return;
+		}
+		PushAlign(parent);
+	}
+
+private:
+	Container _heap = {};
+	Predicate _predicate = {};
 };
-
-Node* CreateTree()
-{
-	Node* root = new Node("R1 개발실");
-	{
-		Node* node = new Node("디자인팀");
-		root->children.push_back(node);
-		{
-			Node* leaf = new Node("전투");
-			node->children.push_back(std::move(leaf));
-		}
-		{
-			Node* leaf = new Node("경제");
-			node->children.push_back(std::move(leaf));
-		}
-		{
-			Node* leaf = new Node("스토리");
-			node->children.push_back(std::move(leaf));
-		}
-	}
-	{
-		Node* node = new Node("프로그래밍팀");
-		root->children.push_back(node);
-		{
-			Node* leaf = new Node("서버");
-			node->children.push_back(std::move(leaf));
-		}
-		{
-			Node* leaf = new Node("클라");
-			node->children.push_back(std::move(leaf));
-		}
-		{
-			Node* leaf = new Node("엔진");
-			node->children.push_back(std::move(leaf));
-		}
-	}
-	{
-		Node* node = new Node("아트팀");
-		root->children.push_back(node);
-		{
-			Node* leaf = new Node("배경");
-			node->children.push_back(std::move(leaf));
-		}
-		{
-			Node* leaf = new Node("캐릭터");
-			node->children.push_back(std::move(leaf));
-		}
-	}
-
-	return root;
-}
-
-void PrintTree(const Node& node, int depth)
-{
-	for (int i = 0; i < depth; i++)
-	{
-		cout << "-";
-	}
-	cout << " ";
-	cout << node.data << endl;
-
-	for(Node* child : node.children)
-	{
-		PrintTree(*child, depth + 1);
-	}
-}
-
-int GetHeight(const Node& node)
-{
-	int height = 1;
-
-	for (Node* child : node.children)
-	{
-		height = max(height, GetHeight(*child) + 1);
-	}
-
-	return height;
-}
 
 int main()
 {
-	Node& root = *CreateTree();
+	//priority_queue<int, vector<int>, greater<int>> pq;
 
-	PrintTree(root, 0);
+	PriorityQueue<int, vector<int>, greater<int>> pq;
 
-	int height = GetHeight(root);
+	pq.push(100);
+	pq.push(300);
+	pq.push(200);
+	pq.push(500);
+	pq.push(400);
 
-	cout << "height: " << height << endl;
+	while (pq.empty() == false)
+	{
+		int value = pq.top();
+		pq.pop();
+
+		cout << value << endl;
+	}
 }
