@@ -20,6 +20,7 @@ public:
 
 	void RightHand();
 	void Bfs();
+	void AStar();
 
 private:
 	Pos _pos = {};

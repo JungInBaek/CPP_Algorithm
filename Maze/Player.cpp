@@ -11,13 +11,16 @@ void Player::Init(Board* board)
 	_board = board;
 
 	//RightHand();
-	Bfs();
+	//Bfs();
+	AStar();
 }
 
 void Player::Update(uint64 deltaTick)
 {
 	if (_pathIndex >= _path.size())
 	{
+		_board->GenerateMap();
+		Init(_board);
 		return;
 	}
 
@@ -170,6 +173,113 @@ void Player::Bfs()
 	_path.clear();
 
 	pos = dest;
+	while (true)
+	{
+		_path.push_back(pos);
+		if (parent[pos] == pos)
+		{
+			break;
+		}
+		pos = parent[pos];
+	}
+
+	std::reverse(_path.begin(), _path.end());
+}
+
+void Player::AStar()
+{
+	Pos start = _pos;
+	Pos dest = _board->GetExitPos();
+	int size = _board->GetSize();
+
+	Pos front[] =
+	{
+		Pos { 0, -1 },	// UP
+		Pos { -1, 0 },	// LEFT
+		Pos { 0, 1 },	// DOWN
+		Pos { 1, 0 },	// RIGHT
+		Pos { -1, -1 },	// UP_LEFT
+		Pos { -1, 1 },	// UP_RIGHT
+		Pos { 1, -1 },	// DOWN_LEFT
+		Pos { 1, 1 },	// DOWN_RIGHT
+	};
+
+	int cost[] =
+	{
+		10,				// UP
+		10,				// LEFT
+		10,				// DOWN
+		10,				// RIGHT
+		14,				// UP_LEFT
+		14,				// UP_RIGHT
+		14,				// DOWN_LEFT
+		14,				// DOWN_RIGHT
+	};
+
+	struct PQNode
+	{
+		bool operator<(const PQNode& other) const
+		{
+			return f < other.f;
+		}
+
+		bool operator>(const PQNode& other) const
+		{
+			return f > other.f;
+		}
+
+		int f;
+		int g;
+		Pos pos;
+	};
+
+	priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pq;
+	vector<vector<int>> best(size, vector<int>(size, INT32_MAX));
+	map<Pos, Pos> parent;
+
+	int g = 0;
+	int h = 10 * (abs(dest.x - start.x) + abs(dest.y - start.y));
+	pq.push(PQNode{ g + h, g, start });
+	best[start.y][start.x] = g + h;
+	parent[start] = start;
+
+	while (pq.empty() == false)
+	{
+		PQNode node = pq.top();
+		pq.pop();
+
+		if (node.pos == dest)
+		{
+			break;
+		}
+
+		for (int dir = 0; dir < DIR_COUNT; ++dir)
+		{
+			Pos nextPos = node.pos + front[dir];
+
+			if (CanGo(nextPos) == false)
+			{
+				continue;
+			}
+
+			int g = node.g + cost[dir];
+			int h = 10 * (abs(dest.x - nextPos.x) + abs(dest.y - nextPos.y));
+
+			if (best[nextPos.y][nextPos.x] <= g + h)
+			{
+				continue;
+			}
+
+			best[nextPos.y][nextPos.x] = g + h;
+			parent[nextPos] = node.pos;
+			pq.push(PQNode{ g + h, g, nextPos });
+		}
+	}
+
+	_path.clear();
+	_pathIndex = 0;
+
+	Pos pos = dest;
 	while (true)
 	{
 		_path.push_back(pos);
