@@ -7,13 +7,58 @@
 using namespace std;
 
 
-template<typename T, typename Container = vector<T>, typename Predicate = less<T>>
+template<typename T, typename Predicate = less<T>>
 class PriorityQueue
 {
 public:
-	bool empty()
+	void push(const T& data)
 	{
-		return _heap.empty();
+		int now = _heap.size();
+		_heap.push_back(data);
+
+		while (now > 0)
+		{
+			int parent = (now - 1) / 2;
+			if (_predicate(_heap[parent], _heap[now]))
+			{
+				T temp = _heap[parent];
+				_heap[parent] = _heap[now];
+				_heap[now] = temp;
+			}
+			now = parent;
+		}
+	}
+
+	void pop()
+	{
+		_heap[0] = _heap.back();
+		_heap.pop_back();
+		
+		int size = _heap.size();
+
+		int now = 0;
+		while (true)
+		{
+			int child = (now * 2) + 1;
+			if (child >= size)
+			{
+				break;
+			}
+
+			if (child + 1 < size && _predicate(_heap[child], _heap[child + 1]))
+			{
+				++child;
+			}
+
+			if (_predicate(_heap[now], _heap[child]))
+			{
+				T temp = _heap[now];
+				_heap[now] = _heap[child];
+				_heap[child] = temp;
+			}
+
+			now = child;
+		}
 	}
 
 	T& top()
@@ -21,90 +66,23 @@ public:
 		return _heap[0];
 	}
 
-	void pop()
+	bool empty()
 	{
-		int index = 0;
-		_heap[index] = _heap.back();
-		_heap.pop_back();
-
-		if (_heap.empty())
-		{
-			return;
-		}
-		PopAlign(index);
-	}
-
-	void push(const T& data)
-	{
-		_heap.push_back(data);
-
-		int index = static_cast<int>(_heap.size()) - 1;
-		if (index == 0)
-		{
-			return;
-		}
-		PushAlign(index);
-	}
-
-	void PopAlign(int index)
-	{
-		int size = static_cast<int>(_heap.size());
-
-		int child = (index * 2) + 1;
-		if (child >= size)
-		{
-			return;
-		}
-
-		if (child + 1 < size && _predicate(_heap[child], _heap[child + 1]))
-		{
-			++child;
-		}
-
-		if (_predicate(_heap[child], _heap[index]))
-		{
-			return;
-		}
-
-		T temp = _heap[index];
-		_heap[index] = _heap[child];
-		_heap[child] = temp;
-
-		if ((child * 2) + 1 >= size)
-		{
-			return;
-		}
-
-		PopAlign(child);
-	}
-
-	void PushAlign(int index)
-	{
-		int parent = (index - 1) / 2;
-		if (_predicate(_heap[parent], _heap[index]))
-		{
-			T temp = _heap[index];
-			_heap[index] = _heap[parent];
-			_heap[parent] = temp;
-		}
-
-		if (parent == 0)
-		{
-			return;
-		}
-		PushAlign(parent);
+		return _heap.empty();
 	}
 
 private:
-	Container _heap = {};
-	Predicate _predicate = {};
+	vector<T> _heap;
+	Predicate _predicate;
 };
+
+
 
 int main()
 {
 	//priority_queue<int, vector<int>, greater<int>> pq;
 
-	PriorityQueue<int, vector<int>, greater<int>> pq;
+	PriorityQueue<int, greater<int>> pq;
 
 	pq.push(100);
 	pq.push(300);
