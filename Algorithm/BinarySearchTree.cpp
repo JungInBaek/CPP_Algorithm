@@ -27,19 +27,6 @@ void BinarySearchTree::Print(Node* node, int x, int y)
 	cout << endl;
 }
 
-void BinarySearchTree::Print_Inorder(Node* node)
-{
-	if (node == nullptr)
-	{
-		return;
-	}
-
-	cout << node->key << endl;
-	Print_Inorder(node->left);
-	Print_Inorder(node->right);
-	cout << endl;
-}
-
 Node* BinarySearchTree::Min(Node* node)
 {
 	while (node->left)
@@ -138,48 +125,51 @@ void BinarySearchTree::Insert(int key)
 void BinarySearchTree::Delete(int key)
 {
 	Node* deleteNode = Search(_root, key);
+	Delete(deleteNode);
+}
 
-	if (deleteNode == nullptr)
+void BinarySearchTree::Delete(Node* node)
+{
+	if (node == nullptr)
 	{
 		return;
 	}
 
-	if (deleteNode->left == nullptr)
+	if (node->left == nullptr)
 	{
-		// deleteNode, deleteNode->right
-		if (deleteNode->parent == nullptr)
-		{
-			_root = deleteNode->right;
-		}
-		else
-		{
-			deleteNode->parent->right = deleteNode->right;
-		}
-
-		if (deleteNode->right)
-		{
-			deleteNode->right->parent = deleteNode->parent;
-		}
-
-		delete deleteNode;
+		Replace(node, node->right);
 	}
-	else if (deleteNode->right == nullptr)
+	else if (node->right == nullptr)
 	{
-		// deleteNode, deleteNode->left
-		if (deleteNode->parent == nullptr)
-		{
-			_root = deleteNode->left;
-		}
-		else
-		{
-			deleteNode->parent->left = deleteNode->left;
-		}
-
-		if (deleteNode->left)
-		{
-			deleteNode->left->parent = deleteNode->parent;
-		}
-
-		delete deleteNode;
+		Replace(node, node->left);
 	}
+	else
+	{
+		Node* next = Next(node);
+		node->key = next->key;
+		Delete(next);
+	}
+}
+
+void BinarySearchTree::Replace(Node* u, Node* v)
+{
+	if (u->parent == nullptr)
+	{
+		_root = v;
+	}
+	else if (u == u->parent->left)
+	{
+		u->parent->left = v;
+	}
+	else
+	{
+		u->parent->right = v;
+	}
+
+	if (v)
+	{
+		v->parent = u->parent;
+	}
+
+	delete u;
 }
