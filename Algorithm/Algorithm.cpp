@@ -5,6 +5,7 @@
 #include <queue>
 #include <thread>
 #include "BinarySearchTree.h"
+#include "Algorithm.h"
 
 using namespace std;
 
@@ -194,6 +195,52 @@ void MergeSortIndex(vector<int>& v, int left, int right)
 	MergeResult(v, left, mid, right);
 }
 
+int Partion(std::vector<int>& v, int left, int right)
+{
+	int pivot = v[left];
+	int low = left + 1;
+	int high = right;
+
+	while (low <= high)
+	{
+		while (low <= right && v[low] <= pivot)
+		{
+			++low;
+		}
+
+		while (high >= left + 1 && v[high] >= pivot)
+		{
+			--high;
+		}
+
+		if (low < high)
+		{
+			int temp = v[low];
+			v[low] = v[high];
+			v[high] = temp;
+		}
+	}
+
+	int temp = v[left];
+	v[left] = v[high];
+	v[high] = temp;
+
+	return high;
+}
+
+void QuickSort(vector<int>& v, int left, int right)
+{
+	if (left >= right)
+	{
+		return;
+	}
+
+	int pivot = Partion(v, left, right);
+
+	QuickSort(v, left, pivot - 1);
+	QuickSort(v, pivot + 1, right);
+}
+
 int main()
 {
 	srand(static_cast<unsigned int>(time(nullptr)));
@@ -201,7 +248,9 @@ int main()
 	int size = 10;
 	for (int i = 0; i < size; i++)
 	{
-		v.push_back((rand() % 50) + 1);
+		int num = (rand() % 50) + 1;
+		v.push_back(num);
+		cout << num << endl;
 	}
 	//std::sort(v.begin(), v.end());
 
@@ -210,5 +259,13 @@ int main()
 	//InsertionSort(v);
 	//HeapSort(v);
 	//MergeSort(v);
-	MergeSortIndex(v, 0, size - 1);
+	//MergeSortIndex(v, 0, size - 1);
+	QuickSort(v, 0, size - 1);
+
+	cout << "정렬 후" << endl;
+
+	for (int i = 0; i < size; i++)
+	{
+		cout << v[i] << endl;
+	}
 }
