@@ -5,267 +5,107 @@
 #include <queue>
 #include <thread>
 #include "BinarySearchTree.h"
-#include "Algorithm.h"
 
 using namespace std;
 
 
-void BubbleSort(vector<int>& v)
+class NavieDisJointSet
 {
-	int rear = static_cast<int>(v.size());
-	while (rear > 0)
-	{
-		for (int i = 0; i < rear - 1; i++)
-		{
-			if (v[i] > v[i + 1])
-			{
-				int temp = v[i];
-				v[i] = v[i + 1];
-				v[i + 1] = temp;
-			}
-		}
-		--rear;
-	}
-}
 
-void SelectionSort(vector<int>& v)
+public:
+	NavieDisJointSet(int n) : _parent(n)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			_parent[i] = i;
+		}
+	}
+
+	int Find(int n)
+	{
+		if (_parent[n] == n)
+		{
+			return n;
+		}
+
+		return Find(_parent[n]);
+	}
+
+	void Merge(int u, int v)
+	{
+		if (Find(u) == Find(v))
+		{
+			return;
+		}
+
+		_parent[u] = v;
+	}
+
+private:
+	vector<int> _parent;
+};
+
+class DisJointSet
 {
-	for (int i = 0; i < v.size() - 1; i++)
+
+public:
+	DisJointSet(int n) : _parent(n), _rank(n, 1)
 	{
-		int index = i;
-		for (int j = i + 1; j < v.size(); j++)
+		for (int i = 0; i < n; i++)
 		{
-			if (v[j] < v[index])
-			{
-				index = j;
-			}
-		}
-
-		int temp = v[i];
-		v[i] = v[index];
-		v[index] = temp;
-	}
-}
-
-void InsertionSort(vector<int>& v)
-{
-	for (int i = 0; i < v.size() - 1; i++)
-	{
-		int index = i + 1;
-		int temp = v[index];
-		for (int j = i; j >= 0; j--)
-		{
-			if (v[j] < temp)
-			{
-				break;
-			}
-			v[index] = v[j];
-			index = j;
-		}
-		v[index] = temp;
-	}
-}
-
-void HeapSort(vector<int>& v)
-{
-	priority_queue<int, vector<int>,greater<>> pq;
-
-	for (int i = 0; i < v.size(); i++)
-	{
-		pq.push(v[i]);
-	}
-
-	v.clear();
-
-	while (pq.empty() == false)
-	{
-		v.push_back(pq.top());
-		pq.pop();
-	}
-}
-
-void MergeSort(vector<int>& v)
-{
-	int size = static_cast<int>(v.size());
-	int half = size / 2;
-
-	if (size <= 1)
-	{
-		return;
-	}
-
-	vector<int> v1;
-	for (int i = 0; i < half; i++)
-	{
-		v1.push_back(v[i]);
-	}
-
-	vector<int> v2;
-	for (int i = half; i < size; i++)
-	{
-		v2.push_back(v[i]);
-	}
-
-	MergeSort(v1);
-	MergeSort(v2);
-
-	v.clear();
-
-	int left = 0;
-	int right = 0;
-	while (left < v1.size() && right < v2.size())
-	{
-		if (v1[left] < v2[right])
-		{
-			v.push_back(v1[left++]);
-		}
-		else
-		{
-			v.push_back(v2[right++]);
+			_parent[i] = i;
 		}
 	}
 
-	if (left >= v1.size())
+	int Find(int n)
 	{
-		while (right < v2.size())
+		if (_parent[n] == n)
 		{
-			v.push_back(v2[right++]);
-		}
-	}
-	else
-	{
-		while (left < v1.size())
-		{
-			v.push_back(v1[left++]);
-		}
-	}
-}
-
-void MergeResult(vector<int>& v, int left, int mid, int right)
-{
-	vector<int> temp;
-
-	int idxL = left;
-	int idxR = mid + 1;
-	while (idxL <= mid && idxR <= right)
-	{
-		if (v[idxL] < v[idxR])
-		{
-			temp.push_back(v[idxL++]);
-		}
-		else
-		{
-			temp.push_back(v[idxR++]);
-		}
-	}
-
-	if (idxL > mid)
-	{
-		while (idxR <= right)
-		{
-			temp.push_back(v[idxR++]);
-		}
-	}
-	else
-	{
-		while (idxL <= mid)
-		{
-			temp.push_back(v[idxL++]);
-		}
-	}
-
-	for (int i = 0; i < temp.size(); i++)
-	{
-		v[left + i] = temp[i];
-	}
-}
-
-void MergeSortIndex(vector<int>& v, int left, int right)
-{
-	if (left >= right)
-	{
-		return;
-	}
-
-	int mid = (left + right) / 2;
-
-	MergeSortIndex(v, left, mid);
-	MergeSortIndex(v, mid + 1, right);
-	
-	MergeResult(v, left, mid, right);
-}
-
-int Partion(std::vector<int>& v, int left, int right)
-{
-	int pivot = v[left];
-	int low = left + 1;
-	int high = right;
-
-	while (low <= high)
-	{
-		while (low <= right && v[low] <= pivot)
-		{
-			++low;
+			return n;
 		}
 
-		while (high >= left + 1 && v[high] >= pivot)
-		{
-			--high;
-		}
-
-		if (low < high)
-		{
-			int temp = v[low];
-			v[low] = v[high];
-			v[high] = temp;
-		}
+		return _parent[n] = Find(_parent[n]);
 	}
 
-	int temp = v[left];
-	v[left] = v[high];
-	v[high] = temp;
-
-	return high;
-}
-
-void QuickSort(vector<int>& v, int left, int right)
-{
-	if (left >= right)
+	void Merge(int u, int v)
 	{
-		return;
+		if (Find(u) == Find(v))
+		{
+			return;
+		}
+
+		if (_rank[u] > _rank[v])
+		{
+			::swap(u, v);
+		}
+		
+		if (_rank[u] == _rank[v])
+		{
+			++_rank[u];
+		}
+
+		_parent[u] = v;
 	}
 
-	int pivot = Partion(v, left, right);
+private:
+	vector<int> _parent;
+	vector<int> _rank;
+};
 
-	QuickSort(v, left, pivot - 1);
-	QuickSort(v, pivot + 1, right);
-}
 
 int main()
 {
-	srand(static_cast<unsigned int>(time(nullptr)));
-	vector<int> v;
-	int size = 10;
-	for (int i = 0; i < size; i++)
-	{
-		int num = (rand() % 50) + 1;
-		v.push_back(num);
-		cout << num << endl;
-	}
-	//std::sort(v.begin(), v.end());
+	DisJointSet teams(1000);
 
-	//BubbleSort(v);
-	//SelectionSort(v);
-	//InsertionSort(v);
-	//HeapSort(v);
-	//MergeSort(v);
-	//MergeSortIndex(v, 0, size - 1);
-	QuickSort(v, 0, size - 1);
+	teams.Merge(10, 1);
+	int teamId1 = teams.Find(1);
+	int teamId2 = teams.Find(10);
 
-	cout << "정렬 후" << endl;
+	teams.Merge(3, 2);
+	int teamId3 = teams.Find(2);
+	int teamId4 = teams.Find(3);
 
-	for (int i = 0; i < size; i++)
-	{
-		cout << v[i] << endl;
-	}
+	teams.Merge(1, 3);
+	int teamId5 = teams.Find(1);
+	int teamId6 = teams.Find(3);
 }
