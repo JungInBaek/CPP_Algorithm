@@ -9,49 +9,30 @@
 using namespace std;
 
 
-class NavieDisJointSet
+struct Vertex {};
+vector<Vertex> vertices;
+vector<vector<int>> adjacent;
+
+void CreateGraph()
 {
+	vertices.resize(6);
+	
+	adjacent.resize(6, vector<int>(6, -1));
+	adjacent[0][1] = adjacent[1][0] = 15;
+	adjacent[0][3] = adjacent[3][0] = 35;
+	adjacent[1][2] = adjacent[2][1] = 5;
+	adjacent[1][3] = adjacent[3][1] = 10;
+	adjacent[3][4] = adjacent[4][3] = 5;
+	adjacent[3][5] = adjacent[5][3] = 10;
+	adjacent[4][5] = adjacent[5][4] = 5;
+}
 
-public:
-	NavieDisJointSet(int n) : _parent(n)
-	{
-		for (int i = 0; i < n; i++)
-		{
-			_parent[i] = i;
-		}
-	}
-
-	int Find(int n)
-	{
-		if (_parent[n] == n)
-		{
-			return n;
-		}
-
-		return Find(_parent[n]);
-	}
-
-	void Merge(int u, int v)
-	{
-		if (Find(u) == Find(v))
-		{
-			return;
-		}
-
-		_parent[u] = v;
-	}
-
-private:
-	vector<int> _parent;
-};
-
-class DisJointSet
+class DisjointSet
 {
-
 public:
-	DisJointSet(int n) : _parent(n), _rank(n, 1)
+	DisjointSet(int n) : _parent(n), _rank(n, 1)
 	{
-		for (int i = 0; i < n; i++)
+		for (int i = 0; i < n; ++i)
 		{
 			_parent[i] = i;
 		}
@@ -78,10 +59,10 @@ public:
 		{
 			::swap(u, v);
 		}
-		
+
 		if (_rank[u] == _rank[v])
 		{
-			++_rank[u];
+			++_rank[v];
 		}
 
 		_parent[u] = v;
@@ -92,20 +73,63 @@ private:
 	vector<int> _rank;
 };
 
+struct CostEdge
+{
+	int cost;
+	int u;
+	int v;
+
+	bool operator<(const CostEdge& other)
+	{
+		return cost < other.cost;
+	}
+};
+
+int Kruskal(vector<CostEdge>& selected)
+{
+	vector<CostEdge> edges;
+	for (int u = 0; u < adjacent.size(); ++u)
+	{
+		for (int v = 0; v < adjacent[u].size(); v++)
+		{
+			if (u > v)
+			{
+				continue;
+			}
+
+			int cost = adjacent[u][v];
+			if (cost == -1)
+			{
+				continue;
+			}
+
+			edges.push_back({ cost, u, v });
+		}
+	}
+
+	::sort(edges.begin(), edges.end());
+
+	DisjointSet sets(vertices.size());
+
+	int ret = 0;
+	for (const CostEdge& edge : edges)
+	{
+		if (sets.Find(edge.u) == sets.Find(edge.v))
+		{
+			continue;
+		}
+
+		selected.push_back(edge);
+		sets.Merge(edge.u, edge.v);
+		ret += edge.cost;
+	}
+
+	return ret;
+}
 
 int main()
 {
-	DisJointSet teams(1000);
-
-	teams.Merge(10, 1);
-	int teamId1 = teams.Find(1);
-	int teamId2 = teams.Find(10);
-
-	teams.Merge(3, 2);
-	int teamId3 = teams.Find(2);
-	int teamId4 = teams.Find(3);
-
-	teams.Merge(1, 3);
-	int teamId5 = teams.Find(1);
-	int teamId6 = teams.Find(3);
+	CreateGraph();
+	vector<CostEdge> selected;
+	int cost = Kruskal(selected);
 }
