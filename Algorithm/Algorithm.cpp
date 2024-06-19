@@ -38,19 +38,22 @@ public:
 		}
 	}
 
-	int Find(int n)
+	int Find(int u)
 	{
-		if (_parent[n] == n)
+		if (_parent[u] == u)
 		{
-			return n;
+			return u;
 		}
 
-		return _parent[n] = Find(_parent[n]);
+		return _parent[u] = Find(_parent[u]);
 	}
 
 	void Merge(int u, int v)
 	{
-		if (Find(u) == Find(v))
+		u = Find(u);
+		v = Find(v);
+
+		if (u == v)
 		{
 			return;
 		}
@@ -112,7 +115,7 @@ int Kruskal(vector<CostEdge>& selected)
 	DisjointSet sets(vertices.size());
 
 	int ret = 0;
-	for (const CostEdge& edge : edges)
+	for (CostEdge& edge : edges)
 	{
 		if (sets.Find(edge.u) == sets.Find(edge.v))
 		{

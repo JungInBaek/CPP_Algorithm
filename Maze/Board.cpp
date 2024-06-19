@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Board.h"
 #include "Player.h"
+#include "DisjointSet.h"
 
 
 const char* TILE = "■";
@@ -58,7 +59,9 @@ void Board::GenerateMap()
         }
     }
 
-    // 랜덤으로 우측 or 아래로 길을 뚫는 작업
+    // Kruskal 알고리즘을 통한 맵 생성
+    vector<CostEdge> edges;
+
     for (int32 y = 0; y < _size; y++)
     {
         for (int32 x = 0; x < _size; x++)
@@ -67,34 +70,40 @@ void Board::GenerateMap()
             {
                 continue;
             }
-            if (y == _size - 2 && x == _size - 2)
+
+            if (x < _size - 2)
             {
-                continue;
+                const int32 randValue = ::rand() % 100;
+                edges.push_back(CostEdge{ randValue, Pos{x, y}, Pos{x + 2, y} });
             }
 
-            if (x == _size - 2)
+            if (y < _size - 2)
             {
-                _tile[y + 1][x] = TileType::EMPTY;
-                continue;
-            }
-            if (y == _size - 2)
-            {
-                _tile[y][x + 1] = TileType::EMPTY;
-                continue;
-            }
-
-            const int32 randValue = ::rand() % 2;
-            switch (randValue)
-            {
-            case 0:
-                _tile[y][x + 1] = TileType::EMPTY;
-                break;
-            case 1:
-            default:
-                _tile[y + 1][x] = TileType::EMPTY;
-                break;
+                const int32 randValue = ::rand() % 100;
+                edges.push_back(CostEdge{ randValue, Pos{x, y}, Pos{x, y + 2 } });
             }
         }
+    }
+
+    ::sort(edges.begin(), edges.end());
+
+    DisjointSet sets(_size * _size);
+
+    for (CostEdge& edge : edges)
+    {
+        int32 u = edge.u.y * _size + edge.u.x;
+        int32 v = edge.v.y * _size + edge.v.x;
+
+        if (sets.Find(u) == sets.Find(v))
+        {
+            continue;
+        }
+
+        sets.Merge(u, v);
+
+        int32 y = (edge.u.y + edge.v.y) / 2;
+        int32 x = (edge.u.x + edge.v.x) / 2;
+        _tile[y][x] = TileType::EMPTY;
     }
 }
 
