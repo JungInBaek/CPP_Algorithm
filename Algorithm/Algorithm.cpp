@@ -82,18 +82,24 @@ struct CostEdge
 	int u;
 	int v;
 
-	bool operator<(const CostEdge& other)
+	bool operator<(const CostEdge& other) const
 	{
 		return cost < other.cost;
+	}
+
+	bool operator>(const CostEdge& other) const
+	{
+		return cost > other.cost;
 	}
 };
 
 int Kruskal(vector<CostEdge>& selected)
 {
-	vector<CostEdge> edges;
+	//vector<CostEdge> edges;
+	priority_queue<CostEdge, vector<CostEdge>, greater<CostEdge>> edges;
 	for (int u = 0; u < adjacent.size(); ++u)
 	{
-		for (int v = 0; v < adjacent[u].size(); v++)
+		for (int v = 0; v < adjacent[u].size(); ++v)
 		{
 			if (u > v)
 			{
@@ -106,17 +112,31 @@ int Kruskal(vector<CostEdge>& selected)
 				continue;
 			}
 
-			edges.push_back({ cost, u, v });
+			edges.push({ cost, u, v });
 		}
 	}
 
-	::sort(edges.begin(), edges.end());
+	//::sort(edges.begin(), edges.end());
 
 	DisjointSet sets(vertices.size());
 
 	int ret = 0;
-	for (CostEdge& edge : edges)
+	/*for (CostEdge& edge : edges)
 	{
+		if (sets.Find(edge.u) == sets.Find(edge.v))
+		{
+			continue;
+		}
+
+		selected.push_back(edge);
+		sets.Merge(edge.u, edge.v);
+		ret += edge.cost;
+	}*/
+
+	while (edges.empty() == false)
+	{
+		CostEdge edge = edges.top();
+		edges.pop();
 		if (sets.Find(edge.u) == sets.Find(edge.v))
 		{
 			continue;
