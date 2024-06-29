@@ -10,30 +10,44 @@
 using namespace std;
 
 
-int cache[45][6];
+int cache[100];
+vector<int> seq;
 
-int Combination(int n, int k)
+int LIS(int pos)
 {
-	if (k == 0 || n == k)
+	int& ret = cache[pos];
+	if (ret != -1)
 	{
-		return 1;
+		return ret;
 	}
 
-	if (cache[n][k] != 0)
+	ret = 1;
+
+	for (int next = pos + 1; next < seq.size(); next++)
 	{
-		return cache[n][k];
+		if (seq[pos] < seq[next])
+		{
+			ret = max(ret, LIS(next) + 1);
+		}
 	}
 
-	return cache[n][k] = Combination(n - 1, k - 1) + Combination(n - 1, k);
+	return ret;
 }
 
 int main()
 {
-	__int64 start = ::GetTickCount64();
+	::memset(cache, -1, sizeof(cache));
+	seq = vector<int>{ 10, 1, 9, 2, 5, 7 };
 
-	int loto = Combination(45, 6);
+	int start = ::GetTickCount64();
 
-	__int64 end = ::GetTickCount64();
+	int len = 0;
+	for (int pos = 0; pos < seq.size(); pos++)
+	{
+		len = max(len, LIS(pos));
+	}
+
+	int end = ::GetTickCount64();
 
 	cout << end - start << "ms" << endl;
 }
