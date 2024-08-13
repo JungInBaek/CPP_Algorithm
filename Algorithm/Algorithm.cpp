@@ -1,68 +1,59 @@
 ﻿#include <iostream>
 #include <vector>
+#include "Windows.h"
 
 using namespace std;
+using uint64 = unsigned __int64;
 
 
-int N;
-vector<int> _path;
-vector<vector<int>> board;
-vector<vector<int>> cache;
+// +1 / +2 / +3씩 증가할 때
+// num ~ N까지 경우의 수
 
-int path(int y, int x)
+uint64 N;
+vector<uint64> cache;
+
+
+uint64 Enchant(uint64 num)
 {
-	if (y >= N)
+	// 기저 사례
+	if (num > N)
 	{
 		return 0;
 	}
 
-	int& ret = cache[y][x];
-	if (ret != 0)
+	if (num == N)
+	{
+		return 1;
+	}
+
+	// 캐시 확인
+	uint64& ret = cache[num];
+	if (ret != -1)
 	{
 		return ret;
 	}
 
-	if (y + 1 >= N)
+	// 계산 적용
+	ret = 0;
+	for (uint64 i = 1; i <= 3; i++)
 	{
-		return ret += board[y][x];
+		ret += Enchant(num + i);
 	}
 
-	int path1 = path(y + 1, x);
-	_path[y + 1] = x;
-	ret = path1;
-
-	if (x + 1 >= board[y + 1].size())
-	{
-		return ret += board[y][x];
-	}
-
-	int path2 = path(y + 1, x + 1);
-	if (path2 > path1)
-	{
-		_path[y + 1] = x + 1;
-		ret = path2;
-	}
-
-	return ret += board[y][x];
+	return ret;
 }
 
 
 int main()
 {
-	board = vector<vector<int>>
-	{
-		{ 6 },
-		{ 1, 2 },
-		{ 3, 7, 4 },
-		{ 9, 4, 1, 7 },
-		{ 2, 7, 5, 9, 4 },
-	};
+	N = 34;
 
-	N = board.size();
-	_path.resize(N);
-	cache.resize(N, vector<int>(N));
+	cache.resize(N, -1);
 
-	_path[0] = 0;
-	int ret = path(0, 0);
+	uint64 start = ::GetTickCount64();
+	uint64 ret = Enchant(0);
+	uint64 end = ::GetTickCount64();
+
 	cout << ret << endl;
+	cout << end - start << endl;
 }
