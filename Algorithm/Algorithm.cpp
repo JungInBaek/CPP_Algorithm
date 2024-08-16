@@ -1,59 +1,96 @@
 ﻿#include <iostream>
 #include <vector>
+#include <algorithm>
 #include "Windows.h"
 
 using namespace std;
 using uint64 = unsigned __int64;
 
 
-// +1 / +2 / +3씩 증가할 때
-// num ~ N까지 경우의 수
-
-uint64 N;
-vector<uint64> cache;
-
-
-uint64 Enchant(uint64 num)
+struct Shoe
 {
-	// 기저 사례
-	if (num > N)
+public:
+	Shoe(int generateTime, int delay, int duration, int speed)
+		: time(generateTime), start(generateTime + delay), end(generateTime + delay + duration), speed(speed)
+	{
+	}
+
+public:
+	int time;
+	int start;
+	int end;
+	int speed;
+};
+
+
+int T;
+vector<Shoe> shoes;
+vector<int> cache;
+
+
+// now번 신발을 신고 갈 수 있는 최대 거리 리턴
+int Solve(int now)
+{
+	// 기저
+	if (now >= shoes.size())
 	{
 		return 0;
 	}
 
-	if (num == N)
-	{
-		return 1;
-	}
-
-	// 캐시 확인
-	uint64& ret = cache[num];
+	// 캐시
+	int& ret = cache[now];
 	if (ret != -1)
 	{
 		return ret;
 	}
 
-	// 계산 적용
-	ret = 0;
-	for (uint64 i = 1; i <= 3; i++)
+	// 현재 신발
+	Shoe& shoe = shoes[now];
+
+	int dist = (shoe.end - shoe.start) * shoe.speed;
+	dist += (T - shoe.end) * 1;
+	ret = max(ret, dist);
+
+	for (int next = now + 1; next < shoes.size(); next++)
 	{
-		ret += Enchant(num + i);
+		// 다음 신발
+		Shoe& nextShoe = shoes[next];
+		if (nextShoe.time < shoe.start)
+		{
+			continue;
+		}
+
+		int nextDist = 0;
+		if (nextShoe.time <= shoe.end)
+		{
+			nextDist = (nextShoe.time - shoe.start) * shoe.speed;
+		}
+		else
+		{
+			nextDist = (shoe.end - shoe.start) * shoe.speed;
+			nextDist += (nextShoe.time - shoe.end) * 1;
+		}
+
+		ret = max(ret, nextDist + Solve(next));
 	}
 
 	return ret;
 }
 
-
 int main()
 {
-	N = 34;
+	T = 20;
 
-	cache.resize(N, -1);
+	shoes.push_back(Shoe(0, 0, T, 1));
+	shoes.push_back(Shoe(3, 4, 10, 3));
+	shoes.push_back(Shoe(4, 1, 4, 2));
+	shoes.push_back(Shoe(10, 2, 5, 5));
+	shoes.push_back(Shoe(15, 1, 3, 7));
+	
+	std::sort(shoes.begin(), shoes.end(), [=](Shoe& left, Shoe& right) { return left.time < right.time; });
 
-	uint64 start = ::GetTickCount64();
-	uint64 ret = Enchant(0);
-	uint64 end = ::GetTickCount64();
+	cache.resize(shoes.size(), -1);
 
+	int ret = Solve(0);
 	cout << ret << endl;
-	cout << end - start << endl;
 }
