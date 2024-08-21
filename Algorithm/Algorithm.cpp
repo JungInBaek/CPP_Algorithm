@@ -1,5 +1,7 @@
 ﻿#include <iostream>
+#include <string>
 #include <vector>
+#include <map>
 #include <algorithm>
 #include "Windows.h"
 
@@ -7,90 +9,85 @@ using namespace std;
 using uint64 = unsigned __int64;
 
 
-struct Shoe
-{
-public:
-	Shoe(int generateTime, int delay, int duration, int speed)
-		: time(generateTime), start(generateTime + delay), end(generateTime + delay + duration), speed(speed)
+int solution(vector<string> friends, vector<string> gifts) {
+	map<string, map<string, int>> breakdown;
+	for (int i = 0; i < friends.size(); i++)
 	{
-	}
-
-public:
-	int time;
-	int start;
-	int end;
-	int speed;
-};
-
-
-int T;
-vector<Shoe> shoes;
-vector<int> cache;
-
-
-// now번 신발을 신고 갈 수 있는 최대 거리 리턴
-int Solve(int now)
-{
-	// 기저
-	if (now >= shoes.size())
-	{
-		return 0;
-	}
-
-	// 캐시
-	int& ret = cache[now];
-	if (ret != -1)
-	{
-		return ret;
-	}
-
-	// 현재 신발
-	Shoe& shoe = shoes[now];
-
-	int dist = (shoe.end - shoe.start) * shoe.speed;
-	dist += (T - shoe.end) * 1;
-	ret = max(ret, dist);
-
-	for (int next = now + 1; next < shoes.size(); next++)
-	{
-		// 다음 신발
-		Shoe& nextShoe = shoes[next];
-		if (nextShoe.time < shoe.start)
+		for (int j = 0; j < friends.size(); j++)
 		{
-			continue;
+			if (i == j)
+			{
+				continue;
+			}
+			breakdown[friends[i]].insert(pair<string, int>(friends[j], 0));
+		}
+	}
+
+	map<string, int> point;
+	for (string& gift : gifts)
+	{
+		char c_gift[25];
+		strcpy_s(c_gift, gift.c_str());
+
+		string sender;
+		string recipient;
+		
+		int i = 0;
+		while (true)
+		{
+			if (c_gift[i] == ' ')
+			{
+				sender = string(&c_gift[0], i);
+				recipient = string(&c_gift[i + 1], gift.length() - (i + 1));
+				break;
+			}
+			++i;
 		}
 
-		int nextDist = 0;
-		if (nextShoe.time <= shoe.end)
-		{
-			nextDist = (nextShoe.time - shoe.start) * shoe.speed;
-		}
-		else
-		{
-			nextDist = (shoe.end - shoe.start) * shoe.speed;
-			nextDist += (nextShoe.time - shoe.end) * 1;
-		}
-
-		ret = max(ret, nextDist + Solve(next));
+		breakdown[sender][recipient] += 1;
+		point[sender] += 1;
+		point[recipient] -= 1;
 	}
 
-	return ret;
+	int answer = 0;
+	for (string& name : friends)
+	{
+		int count = 0;
+		for (string& recipient : friends)
+		{
+			if (name == recipient)
+			{
+				continue;
+			}
+
+			if (breakdown[name][recipient] > breakdown[recipient][name])
+			{
+				++count;
+				continue;
+			}
+
+			if (breakdown[name][recipient] != breakdown[recipient][name])
+			{
+				continue;
+			}
+
+			if (point[name] <= point[recipient])
+			{
+				continue;
+			}
+
+			++count;
+		}
+
+		answer = max(answer, count);
+	}
+    return answer;
 }
 
 int main()
 {
-	T = 20;
-
-	shoes.push_back(Shoe(0, 0, T, 1));
-	shoes.push_back(Shoe(3, 4, 10, 3));
-	shoes.push_back(Shoe(4, 1, 4, 2));
-	shoes.push_back(Shoe(10, 2, 5, 5));
-	shoes.push_back(Shoe(15, 1, 3, 7));
-	
-	std::sort(shoes.begin(), shoes.end(), [=](Shoe& left, Shoe& right) { return left.time < right.time; });
-
-	cache.resize(shoes.size(), -1);
-
-	int ret = Solve(0);
-	cout << ret << endl;
+	vector<string> friends = { "muzi", "ryan", "frodo", "neo" };
+	vector<string> gifts = { "muzi frodo", "muzi frodo", "ryan muzi", "ryan muzi", "ryan muzi", "frodo muzi", "frodo ryan", "neo muzi" };
+	int answer = solution(friends, gifts);
+	cout << answer << endl;
 }
