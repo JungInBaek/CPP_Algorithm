@@ -4,7 +4,7 @@
 #include "DisjointSet.h"
 
 
-const char* TILE = "¡á";
+const char* TILE = "â– ";
 
 Board::Board()
 {
@@ -41,7 +41,7 @@ void Board::Render()
     }
 }
 
-// Binary Tree ¹Ì·Î »ý¼º ¾Ë°í¸®Áò
+// Binary Tree ï¿½Ì·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ë°ï¿½ï¿½ï¿½ï¿½
 // - Mazes For Programmers
 void Board::GenerateMap_Kruskal()
 {
@@ -72,7 +72,7 @@ void Board::GenerateMap_Kruskal()
         }
     }
 
-    // Kruskal ¾Ë°í¸®ÁòÀ» ÅëÇÑ ¸Ê »ý¼º
+    // Kruskal ï¿½Ë°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     vector<CostEdge> edges;
 
     for (int32 y = 0; y < _size; y++)
@@ -148,7 +148,7 @@ void Board::GenerateMap_Prim()
         }
     }
 
-    // Prim ¾Ë°í¸®ÁòÀ» ÅëÇÑ ¸Ê »ý¼º
+    // Prim ï¿½Ë°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     map<Pos, vector<CostEdge>> edges;
 
     for (int y = 0; y < _size; y++)
